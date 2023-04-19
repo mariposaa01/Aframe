@@ -1,0 +1,42 @@
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Following Camera</title>
+  <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+  <script src="https://unpkg.com/aframe-event-set-component@5.0.0/dist/aframe-event-set-component.min.js"></script>
+  
+</head>
+
+<body>
+  <a-scene>
+    
+    <a-sky src="../images/vr-beach.jpg"></a-sky> 
+
+
+      <a-entity id="camera" camera look-controls>
+        <a-sphere position="0 0 -3" rotation="0 0 0" sphere-follow></a-sphere>
+      </a-entity>
+      
+      <script>
+      AFRAME.registerComponent('sphere-follow', {
+        init: function () {
+          var sphere = this.el;
+          var camera = document.getElementById('camera');
+          
+          // Listen for changes in the camera's rotation
+          camera.addEventListener('componentchanged', function (event) {
+            var rotation = event.detail.rotation;
+            
+            // Update the sphere's rotation to match the camera's rotation
+            sphere.setAttribute('rotation', rotation);
+          });
+        }
+      });
+      </script>
+      
+   
+
+  </a-scene>
+</body>
+
+</html>

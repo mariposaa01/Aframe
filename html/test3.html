@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Static Menu</title>
+  <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+  <script src="../js//test3.js"></script>
+</head>
+
+<body>
+  <style>
+    .model-menu {
+      width: 30%;
+      height: 150px;
+      border-radius: 10px;
+      position: absolute;
+      background-color: rgba(0, 0, 255, 0.2);
+      opacity: 0.8;
+      bottom: 20px;
+      z-index: 99;
+      left: 35%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+    }
+
+    .clicked {
+      background-color: red;
+      padding: 20px;
+      transition: all ease-in-out 1s;
+    }
+
+    .btn-click{
+      width: 60px;
+      height: 80px;
+      margin-left: 20px;
+      background-color: rgba(0, 0, 255, 0.5);
+      border: none;
+      color: white;
+      font-size: 3rem;
+    }
+  </style>
+  <script>
+
+    AFRAME.registerComponent("scene", {
+      init: function () {
+
+        this.el.addEventListener('click', (evt) => {
+
+
+          document.querySelector('.btn-click').classList.add('clicked');
+        });
+
+      }
+    })
+  </script>
+
+  <!-- ********************************* HTMl Starts HERE ********************************* -->
+
+  <a-scene cursor="rayOrigin:mouse">
+
+    <a-sky src="../images/vr-beach.jpg"></a-sky>
+
+    <a-entity id="objects" position="0 0 -5" scale="1 1 0.5">
+      <a-sphere position="0 1.25 -5" radius="1.25" src="../images/beachball.jpg"></a-sphere>
+    </a-entity>
+
+     <!--Small sphere-->
+     <a-entity id="small" position="3 0 -6" rotation="0 0 0" scale="0.1 0.1 0.1">
+      <a-sphere position="0 1.25 -5" radius="1.25"  src="../images/beachball.jpg"></a-sphere>
+    </a-entity>
+
+    <!--Big sphere-->
+    <a-entity id="big" position="-14 0 -5" scale="4 4 2.5">
+      <a-sphere position="0 1.25 -5" radius="1.25"  src="../images/beachball.jpg"></a-sphere>
+    </a-entity>
+
+
+    <a-entity camera position="0 1 0" look-controls>
+      <!-- Other camera-related entities here -->
+    </a-entity>
+    <a-entity id="ent" position="0 0 -5" gltf-model="#scene"></a-entity>
+  </a-scene>
+
+
+  <div class="model-menu bottom-menu">
+    <button id="buttonA" class="btn-click clicked-btn">+</button>
+    <button id="buttonR" class="btn-click">R</button>
+    <button id="buttonC" class="btn-click">-</button>
+  </div>
+
+  <!-- ********************************* HTMl ENDS HERE ********************************* -->
+
+  <script>
+    const sceneEl = document.querySelector('a-scene');
+    const entityEl = document.querySelector('#ent');
+    const menuContainer = document.querySelector('.model-menu');
+    const MIN_SCALE = 0.5;
+    const MAX_SCALE = 2.0;
+
+    sceneEl.addEventListener('wheel', (event) => {
+      // small increments for smoother zooming
+      const delta = event.wheelDelta / 120 / 10;
+      const currentScale = entityEl.getAttribute('scale');
+      const finalScale = {
+        x: currentScale.x + delta,
+        y: currentScale.y + delta,
+        z: currentScale.z + delta,
+      };
+      // limit the scale to a reasonable range
+      finalScale.x = Math.min(MAX_SCALE, Math.max(MIN_SCALE, finalScale.x));
+      finalScale.y = Math.min(MAX_SCALE, Math.max(MIN_SCALE, finalScale.y));
+      finalScale.z = Math.min(MAX_SCALE, Math.max(MIN_SCALE, finalScale.z));
+      entityEl.setAttribute('scale', finalScale);
+      menuContainer.style.transform = `scale3d(${finalScale.x}, ${finalScale.y}, ${finalScale.z})`;
+
+    });
+
+    const cameraEl = document.querySelector('a-entity[camera]');
+    const modelEl = document.querySelector('#ent');
+    let isDragging = false;
+    let previousPosition = new THREE.Vector3();
+
+    modelEl.addEventListener('mousedown', (event) => {
+      isDragging = true;
+      previousPosition.copy(modelEl.object3D.position);
+    });
+
+    modelEl.addEventListener('mouseup', (event) => {
+      isDragging = false;
+    });
+
+    modelEl.addEventListener('mousemove', (event) => {
+      if (isDragging) {
+        const delta = new THREE.Vector3().subVectors(modelEl.object3D.position, previousPosition);
+        previousPosition.copy(modelEl.object3D.position);
+        cameraEl.object3D.position.sub(delta);
+      }
+    });
+
+    let dragStartX = 0;
+    let modelMenuStartX = 0;
+
+    modelEl.addEventListener('dragstart', (event) => {
+      dragStartX = event.clientX;
+      modelMenuStartX = parseInt(menuContainer.style.left) || 0;
+    });
+
+    modelEl.addEventListener('drag', (event) => {
+      debugger
+      const dragDeltaX = event.clientX - dragStartX;
+      const modelMenuX = modelMenuStartX + dragDeltaX;
+      menuContainer.style.left = `${modelMenuX}px`;
+    });
+  </script>
+
+
+</body>
+
+</html>
